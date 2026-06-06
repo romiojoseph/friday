@@ -1,0 +1,248 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 120;
+  padding: 16px;
+}
+
+.active {
+  display: flex;
+}
+
+.modal {
+  width: 100%;
+  max-width: 728px;
+  background: var(--neutral-0);
+  border: 2px solid var(--neutral-3);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(58, 58, 58, 0.45);
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--font-heading6);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--neutral-9);
+}
+
+.close {
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--neutral-8);
+  font-size: 1.5rem;
+  outline: none;
+}
+
+.close:hover {
+  color: #fff;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 24px;
+}
+
+.label {
+  font-size: var(--font-caption) !important;
+  color: var(--neutral-8);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.textInput {
+  flex: 1;
+  background: var(--neutral-2);
+  border: 2px solid var(--neutral-3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #fff;
+  font-size: var(--font-subtitle);
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.textInput:hover:not(:disabled) {
+  background: var(--neutral-0);
+  border-color: var(--neutral-4);
+}
+
+.textInput:focus {
+  border-color: var(--neutral-4);
+  box-shadow: 0 0 4px 1px var(--neutral-4);
+}
+
+.textInput:disabled {
+  background: var(--neutral-3);
+  border-color: var(--neutral-4);
+  color: var(--neutral-9);
+  cursor: not-allowed;
+}
+
+.retentionContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pillContainer {
+  display: flex;
+  background: var(--neutral-2);
+  border: 2px solid var(--neutral-3);
+  border-radius: 100px;
+  padding: 4px;
+  gap: 4px;
+  width: 100%;
+}
+
+.pillButton {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--neutral-8);
+  font-family: var(--font-sans);
+  font-size: var(--font-body);
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 100px;
+  width: 100%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pillButton:hover {
+  background: var(--neutral-3);
+  color: var(--neutral-11);
+}
+
+.pillButtonActive {
+  background: var(--primary-base);
+  color: var(--neutral-12);
+  box-shadow: 0 2px 8px var(--primary-light);
+}
+
+.helper {
+  font-size: var(--font-body);
+  font-weight: 500;
+  color: var(--neutral-7);
+  margin: 4px 0 0;
+}
+
+.textArea {
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  background: var(--neutral-2);
+  border: 2px solid var(--neutral-3);
+  border-radius: 12px;
+  padding: 16px;
+  color: #fff;
+  font-size: var(--font-subtitle);
+  line-height: 1.5;
+  outline: none;
+  transition: all 0.2s ease-in-out;
+}
+
+.textArea:hover {
+  background: var(--neutral-0);
+  border-color: var(--neutral-4);
+}
+
+.textArea:focus {
+  border-color: var(--neutral-4);
+  box-shadow: 0 0 4px 1px var(--neutral-4);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1.75rem;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 12px;
+  -webkit-user-select: none;
+  user-select: none;
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+  width: fit-content;
+}
+
+.checkboxRow:hover {
+  background: var(--neutral-2);
+}
+
+.checkboxIconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkboxLabel {
+  font-family: var(--font-sans);
+  font-size: var(--font-subtitle);
+  font-weight: 500;
+  color: var(--neutral-8);
+  transition: color 0.2s ease-in-out;
+}
+
+.checkboxRow:hover .checkboxLabel {
+  color: var(--neutral-11);
+}
+
+.checkedIcon {
+  color: var(--success-base);
+  transition: color 0.24s ease-in-out, transform 0.24s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.checkboxRow:hover .checkedIcon {
+  color: var(--success-hover);
+  transform: scale(1.08);
+}
+
+.uncheckedIcon {
+  color: var(--neutral-6);
+  transition: color 0.24s ease-in-out;
+}
+
+.checkboxRow:hover .uncheckedIcon {
+  color: var(--neutral-8);
+}
+
+.uncheckedIconHover {
+  color: var(--neutral-8);
+  transition: color 0.24s ease-in-out;
+}

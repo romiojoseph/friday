@@ -1,0 +1,11 @@
+/dist
+/build
+__pycache__/
+.eslintcache
+frontend/node_modules/
+frontend/dist/
+*.pyc
+projects.json
+*.zip
+*.exe
+.gocache/
