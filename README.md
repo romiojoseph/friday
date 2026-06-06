@@ -5,6 +5,9 @@ A lightweight backup manager for Windows. Create versioned snapshots of your pro
 
 > This is a vibe coded project. I built this entirely with AI assistance. I handled the frontend design and UX; the Go backend was AI-generated and iterated on through prompting. Use it or fork it.
 
+**Early release! Use at your own risk, things may break.**
+
+
 ---
 
 ## Features
@@ -116,6 +119,9 @@ dist/
 
 *UPX is a free, open-source executable compressor that reduces the binary size — the compressed `.exe` self-decompresses at launch with no performance impact for typical use.*
 
+> By default the exe is 8,646 kb and if you use upx, it will be around 3,163 kb.
+
+Enable Windows notifications to receive quick backup alerts.
 ---
 
 ## Common Issues
