@@ -1,141 +1,59 @@
 # Friday: Desktop Backup Manager
-A lightweight backup manager for Windows. Create versioned snapshots of your projects, restore previous backups, and manage everything from the system tray.
+A lightweight backup manager for Windows. Create versioned snapshots of your projects.
 
-**Built with:** Go · React · Vite
+If you are already using the previous version (commit `f1f0f7d`) which was built with Go · React · Vite, check out the [Migration Guide](migration/README.md) to migrate your existing projects, settings, and verified backup history. The application was migrated to Flutter for simplicity and native desktop appearance. I hadn't considered Flutter initially and wanted to keep it light, but as I used it regularly, Flutter proved to be the right choice for this tool.
 
-> This is a vibe coded project. I built this entirely with AI assistance. I handled the frontend design and UX; the Go backend was AI-generated and iterated on through prompting. Use it or fork it.
-
-**Early release! Use at your own risk, things may break.**
-
+> This is a vibe-coded project, built entirely with AI assistance. I handled the design, while the logic was AI-generated and refined through iterative prompting. Use it or fork it.
 
 ---
 
 ## Features
 
-- System tray integration — double-click to open, right-click for quick actions
-- Versioned backups with diff visualization (`+` added, `~` modified, `-` deleted, `∅` excluded)
-- File exclusion patterns (e.g. `node_modules/**`)
-- Retention limits but nothing is enforced only for fast manual cleanup.
-- No setup, no external dependencies — single `.exe`
+- **Versioned Snapshots**: Automatic incremental backup versioning (`_v1`, `_v2`, etc.) with ZIP compression and content hashing.
+- **Diff Visualization**: Live tracking of project file changes (`+` added, `~` modified, `-` deleted, `∅` excluded) before and after creating backups.
+- **Smart Exclusion Engine**:
+  - Filter out unnecessary files and folders.
+  - Stack preset templates for **Web** (`node_modules`, `.next`, `dist`, etc.), **Flutter**, **Python**, **Rust**, **Go**, **Kotlin**, and **Docker**.
+  - **Early Directory Pruning**: Prunes excluded directories at root level during scanning so heavy vendor directories (`node_modules`, `.next`) never cause UI freezing or lag.
+- **Pre-backup Preview**: Inspect files and their status before committing a backup.
+- **Backup History & Integrity**:
+  - Inspect files inside any past backup.
+  - SHA-256 ZIP checksum verification and corrupted archive detection.
+  - Single or multi-select deletion of previous backup snapshots.
+- **Flexible Destinations**: Save backups directly into project-specific destination folders or route them into a centralized global backup directory.
 
 ---
 
 ## Prerequisites
 
-- [Go](https://go.dev/dl/) 1.26+
-- [Node.js](https://nodejs.org/) 24+
-- Windows 11 or later
-
----
-
-## Development
-
-Run `dev.bat` from the project root:
-
-```cmd
-.\dev.bat
-```
-
-This starts two terminal windows:
-- Go backend on `http://localhost:2468`
-- React dev server on `http://localhost:5173`
-
-Open `http://localhost:5173`. Hot reload is enabled.
+- [Flutter SDK](https://docs.flutter.dev/install/quick) 3.12+ with Windows desktop support enabled
+- Windows 10 or 11
+- Visual Studio 2022 (with the **"Desktop development with C++"** workload installed)
 
 ---
 
 ## Build
 
-Run `build.bat` from the project root:
+### Using the Build Script (Recommended)
 
-```cmd
-.\build.bat
+Run the interactive build assistant from PowerShell:
+
+```powershell
+.\build.ps1
 ```
 
-Output: `dist/Friday.exe`
+- Select option `2` to build the Windows Release executable.
+- The script automatically compiles the release build and prompts to open the output directory in Explorer.
 
-Optionally, place [`upx.exe`](https://github.com/upx/upx) inside `dist/` before building. The script will prompt you to compress the binary.
+### Using Flutter CLI
 
----
+Build a Windows Release standalone bundle directly:
 
-## Running
-
-```cmd
-friday.exe
+```powershell
+flutter build windows --release
 ```
 
-Starts in the system tray. Double-click the icon to open the UI (and if you want also add `Pin to Start`).
-
----
-
-## Project Structure
-
+The output executable and required runner libraries will be generated at:
 ```
-frontend/
-  public/
-    font/                         # Self-hosted (woff2)
-    favicon.svg
-    logo.svg
-    manifest.webmanifest
-    sw.js
-  src/
-    api/
-      friday.js                   # Backend API calls
-    components/
-      Button/
-      ConfirmModal/
-      Dropdown/
-      GlobalSettingsModal/
-      Header/
-      HistoryModal/
-      PreviewModal/
-      ProjectCard/
-      SettingsModal/
-      Spinner/
-      Toasts/
-    styles/
-      base.css
-      tokens.css                  # Design tokens
-    utils/
-      formatters.js
-    App.jsx
-    main.jsx
-  index.html
-  vite.config.js
-winres/
-  icon.png
-  icon16.png
-  winres.json                     # Windows metadata and icon config
-build.bat                         # Production build script
-dev.bat                           # Development script
-main.go                           # Go backend and tray
-go.mod / go.sum                   # Go dependencies
-dist/
-  Friday.exe
-  friday.db                       # SQLite data file (created at runtime)
+build\windows\x64\runner\Release\
 ```
-
-`.syso` files are pre-compiled Windows resource objects generated by `go-winres`. They embed the app icon, version info, and metadata directly into the `.exe` at build time. Go picks them up automatically — you don't touch them.
-
-*UPX is a free, open-source executable compressor that reduces the binary size — the compressed `.exe` self-decompresses at launch with no performance impact for typical use.*
-
-> By default the exe is 8,646 kb and if you use upx, it will be around 3,163 kb.
-
-Enable Windows notifications to receive quick backup alerts.
----
-
-## Common Issues
-
-**"Address already in use"**
-Port 2468 is occupied. Close any running Friday instance or change the port in `main.go`.
-
-**Backup is corrupted**
-Close any open files inside the project folder and retry.
-
-**Change the icon or app name**
-Edit `winres/winres.json`, then rebuild.
-
----
-
-## License
-MIT
