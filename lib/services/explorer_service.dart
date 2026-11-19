@@ -34,10 +34,10 @@ class ExplorerService {
 
   static Future<String?> pickDirectory({String? dialogTitle}) async {
     try {
-      final result = await FilePicker.getDirectoryPath(
+      final uri = await FilePicker.pickDirectory(
         dialogTitle: dialogTitle ?? 'Select Backup Directory',
       );
-      return result;
+      return uri?.toFilePath();
     } catch (_) {
       return null;
     }

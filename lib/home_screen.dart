@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'models/project.dart';
 import 'providers/backup_provider.dart';
 import 'services/backup_service.dart';
@@ -7,7 +8,9 @@ import 'services/explorer_service.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_spacing.dart';
 import 'theme/app_typography.dart';
+import 'utils/app_constants.dart';
 import 'widgets/common/app_button.dart';
+import 'widgets/common/spinner.dart';
 import 'widgets/common/toast_overlay.dart';
 import 'widgets/dialogs/confirm_dialog.dart';
 import 'widgets/dialogs/global_settings_dialog.dart';
@@ -171,6 +174,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _onCheckForUpdate() async {
+    await launchUrl(
+      Uri.parse(AppConstants.updateUrl),
+      mode: LaunchMode.externalApplication,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final projects = widget.provider.projects;
@@ -185,11 +195,26 @@ class _HomeScreenState extends State<HomeScreen> {
               AppHeader(
                 onAddProject: _onAddProject,
                 onOpenGlobalSettings: _onOpenGlobalSettings,
+                onCheckForUpdate: _onCheckForUpdate,
               ),
               Expanded(
-                child: projects.isEmpty
-                    ? Center(
-                        child: Padding(
+                child: widget.provider.isLoading
+                    ? const Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Spinner(size: 32),
+                            SizedBox(height: AppSpacing.md),
+                            Text(
+                              'Loading projects...',
+                              style: TextStyle(color: AppColors.neutral8),
+                            ),
+                          ],
+                        ),
+                      )
+                    : projects.isEmpty
+                        ? Center(
+                            child: Padding(
                           padding: const EdgeInsets.all(AppSpacing.xxl),
                           child: Column(
                             mainAxisSize: MainAxisSize.min,

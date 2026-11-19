@@ -531,7 +531,7 @@ class BackupService {
             String zipHash = origHash;
             String integrity = dbItem?.integrity ?? 'verified';
 
-            if (filesList.isEmpty || note.isEmpty) {
+            if (dbItem == null || filesList.isEmpty) {
               try {
                 final inputStream = InputFileStream(entity.path);
                 try {

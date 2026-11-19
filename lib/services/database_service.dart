@@ -263,15 +263,21 @@ class DatabaseService {
   }
 
   Future<List<BackupItem>> getBackupsForProject(String projectName) async {
-    final db = await database;
-    final rows = await db.query(
-      'backups',
-      where: 'project_name = ?',
-      whereArgs: [projectName],
-      orderBy: 'version DESC',
-    );
+    try {
+      final db = await database;
+      final trimmed = projectName.trim();
+      final rows = await db.query(
+        'backups',
+        where: 'LOWER(project_name) = LOWER(?)',
+        whereArgs: [trimmed],
+        orderBy: 'version DESC',
+      );
 
-    return rows.map((r) => BackupItem.fromJson(r)).toList();
+      return rows.map((r) => BackupItem.fromJson(r)).toList();
+    } catch (e, st) {
+      debugPrint('[DatabaseService] Error getting backups for $projectName: $e\n$st');
+      return [];
+    }
   }
 
   Future<void> deleteBackupRecords(List<String> filenames) async {

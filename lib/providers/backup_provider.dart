@@ -49,11 +49,31 @@ class BackupProvider extends ChangeNotifier {
     _isLoading = true;
     notifyListeners();
 
-    _appData = await _databaseService.loadData();
-    await refreshProjects();
+    try {
+      _appData = await _databaseService.loadData();
+      final initializedProjects = _appData.projects.map((p) {
+        final dst = _backupService.resolveDestination(p, _appData.settings);
+        final (dstSize, dstCount) = const BackupService().calculateDestStats(dst, p.name);
+        return p.copyWith(
+          destinationEffective: dst,
+          dstSize: dstSize,
+          dstCount: dstCount,
+          status: p.version > 0 ? 'clean' : 'new',
+        );
+      }).toList();
+      _appData = _appData.copyWith(projects: initializedProjects);
+    } catch (e, st) {
+      debugPrint('[BackupProvider] Error loading data from DB: $e\n$st');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
 
-    _isLoading = false;
-    notifyListeners();
+    try {
+      await refreshProjects();
+    } catch (e, st) {
+      debugPrint('[BackupProvider] Error refreshing projects: $e\n$st');
+    }
   }
 
   bool _isScanning = false;
@@ -70,41 +90,51 @@ class BackupProvider extends ChangeNotifier {
 
       for (int i = 0; i < snapshot.length; i++) {
         final proj = snapshot[i];
-        final dstEffective = _backupService.resolveDestination(proj, _appData.settings);
-        final pName = proj.name;
-        final (dstSize, dstCount) = await Isolate.run(() => const BackupService().calculateDestStats(dstEffective, pName));
+        try {
+          final dstEffective = _backupService.resolveDestination(proj, _appData.settings);
+          final (dstSize, dstCount) = _backupService.calculateDestStats(dstEffective, proj.name);
 
-        String lastZipPath = '';
-        if (proj.lastZipName.isNotEmpty && dstEffective.isNotEmpty) {
-          lastZipPath = p.join(dstEffective, proj.lastZipName);
+          String lastZipPath = '';
+          if (proj.lastZipName.isNotEmpty && dstEffective.isNotEmpty) {
+            lastZipPath = p.join(dstEffective, proj.lastZipName);
+          }
+
+          final pSource = proj.source;
+          final pExclusion = proj.exclusionRules;
+          final scan = await Isolate.run(() => const BackupService().scanProject(
+            pSource,
+            pExclusion,
+            lastZipPath: lastZipPath,
+          ));
+
+          String status = 'clean';
+          if (proj.version == 0) {
+            status = 'new';
+          } else if (scan.currentHash != proj.contentHash) {
+            status = 'modified';
+          }
+
+          updatedProjects.add(proj.copyWith(
+            srcSize: scan.size,
+            srcCount: scan.count,
+            dstSize: dstSize,
+            dstCount: dstCount,
+            destinationEffective: dstEffective,
+            status: status,
+            currentHash: scan.currentHash,
+            activeWrites: scan.hasActive,
+            activeWritesReason: scan.activeReason,
+          ));
+        } catch (e, st) {
+          debugPrint('[BackupProvider] Error scanning project ${proj.name}: $e\n$st');
+          final dstEffective = _backupService.resolveDestination(proj, _appData.settings);
+          final (dstSize, dstCount) = const BackupService().calculateDestStats(dstEffective, proj.name);
+          updatedProjects.add(proj.copyWith(
+            destinationEffective: dstEffective,
+            dstSize: dstSize,
+            dstCount: dstCount,
+          ));
         }
-
-        final pSource = proj.source;
-        final pExclusion = proj.exclusionRules;
-        final scan = await Isolate.run(() => const BackupService().scanProject(
-          pSource,
-          pExclusion,
-          lastZipPath: lastZipPath,
-        ));
-
-        String status = 'clean';
-        if (proj.version == 0) {
-          status = 'new';
-        } else if (scan.currentHash != proj.contentHash) {
-          status = 'modified';
-        }
-
-        updatedProjects.add(proj.copyWith(
-          srcSize: scan.size,
-          srcCount: scan.count,
-          dstSize: dstSize,
-          dstCount: dstCount,
-          destinationEffective: dstEffective,
-          status: status,
-          currentHash: scan.currentHash,
-          activeWrites: scan.hasActive,
-          activeWritesReason: scan.activeReason,
-        ));
       }
 
       // Merge scanned results back into current state so newly added projects are never wiped.
@@ -145,6 +175,8 @@ class BackupProvider extends ChangeNotifier {
         }
         _initialLoadAlerted = true;
       }
+    } catch (e, st) {
+      debugPrint('[BackupProvider] Error in refreshProjects: $e\n$st');
     } finally {
       _isScanning = false;
     }
@@ -341,23 +373,44 @@ class BackupProvider extends ChangeNotifier {
     if (index < 0 || index >= _appData.projects.length) return [];
     final project = _appData.projects[index];
     final settings = _appData.settings;
-    final dbList = await _databaseService.getBackupsForProject(project.name);
+
+    List<BackupItem> dbList = [];
+    try {
+      dbList = await _databaseService.getBackupsForProject(project.name);
+    } catch (e, st) {
+      debugPrint('[BackupProvider] Error getting backups from db: $e\n$st');
+    }
     final dbMap = {for (final b in dbList) b.filename: b};
 
-    final backups = await Isolate.run(() => const BackupService().listProjectBackups(
-      project,
-      settings,
-      dbBackups: dbMap,
-    ));
+    List<BackupItem> diskBackups = [];
+    try {
+      diskBackups = await Isolate.run(() => const BackupService().listProjectBackups(
+        project,
+        settings,
+        dbBackups: dbMap,
+      ));
+    } catch (e, st) {
+      debugPrint('[BackupProvider] Error listing disk backups: $e\n$st');
+    }
 
-    for (final b in backups) {
+    for (final b in diskBackups) {
       final existing = dbMap[b.filename];
       if (existing == null || (existing.note.isEmpty && b.note.isNotEmpty)) {
-        await _databaseService.insertBackupRecord(project.name, b);
+        try {
+          await _databaseService.insertBackupRecord(project.name, b);
+        } catch (_) {}
       }
     }
 
-    return backups;
+    // Merge: Preserve all DB backup items; update/augment with live disk scans if found
+    final resultMap = Map<String, BackupItem>.from(dbMap);
+    for (final b in diskBackups) {
+      resultMap[b.filename] = b;
+    }
+
+    final combined = resultMap.values.toList();
+    combined.sort((a, b) => b.version.compareTo(a.version));
+    return combined;
   }
 
   Future<ProjectScanResult> fetchPreview(int index) async {

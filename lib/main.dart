@@ -5,6 +5,27 @@ import 'providers/backup_provider.dart';
 import 'services/window_service.dart';
 import 'theme/app_colors.dart';
 
+TextTheme _buildGoogleSansTextTheme() {
+  final g = GoogleFonts.googleSansTextTheme();
+  return TextTheme(
+    displayLarge: g.displayLarge,
+    displayMedium: g.displayMedium,
+    displaySmall: g.displaySmall,
+    headlineLarge: g.headlineLarge,
+    headlineMedium: g.headlineMedium,
+    headlineSmall: g.headlineSmall,
+    titleLarge: g.titleLarge,
+    titleMedium: g.titleMedium,
+    titleSmall: g.titleSmall,
+    bodyLarge: g.bodyLarge,
+    bodyMedium: g.bodyMedium,
+    bodySmall: g.bodySmall,
+    labelLarge: g.labelLarge,
+    labelMedium: g.labelMedium,
+    labelSmall: g.labelSmall,
+  );
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await WindowService.initialize();
@@ -46,9 +67,7 @@ class _FridayAppState extends State<FridayApp> {
           primary: AppColors.primaryBase,
           surface: AppColors.neutral2,
         ),
-        textTheme: GoogleFonts.googleSansTextTheme(
-          ThemeData.dark().textTheme,
-        ),
+        textTheme: _buildGoogleSansTextTheme(),
       ),
       home: ListenableBuilder(
         listenable: _backupProvider,

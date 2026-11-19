@@ -1,7 +1,7 @@
 name: friday
 description: "A lightweight desktop backup manager for Windows. Create versioned snapshots of your projects."
 publish_to: "none"
-version: 2.0.0+1
+version: 2.1.0+1
 
 environment:
   sdk: ^3.12.2
@@ -10,20 +10,19 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^2.0.0
-  google_fonts: ^8.2.1
-  file_picker: ^13.1.0
-  archive: ^4.0.9
-  crypto: ^3.0.7
+  google_fonts: ^9.0.0
+  file_picker: ^13.4.0
+  archive: ^4.7.1
+  crypto: ^3.0.8
   path: ^1.9.1
   path_provider: ^2.1.6
-  window_manager: ^0.5.2
+  window_manager: ^0.6.0
   local_notifier: ^0.1.6
   intl: ^0.20.3
-  url_launcher: ^6.3.2
-  flutter_svg: ^2.3.0
+  url_launcher: ^6.3.3
+  flutter_svg: ^2.4.0
   phosphoricons_flutter: ^1.1.1
-  sqflite_common_ffi: ^2.4.4
+  sqflite_common_ffi: ^2.4.7
 
 dev_dependencies:
   flutter_test:

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:phosphoricons_flutter/phosphoricons_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 import '../../theme/app_colors.dart';
 import '../../theme/app_spacing.dart';
 import '../../theme/app_typography.dart';
+import '../../utils/app_constants.dart';
 import '../common/app_button.dart';
 
 class WindowCaptionButton extends StatefulWidget {
@@ -65,48 +67,57 @@ class _WindowCaptionButtonState extends State<WindowCaptionButton> {
 class AppHeader extends StatefulWidget {
   final VoidCallback onAddProject;
   final VoidCallback onOpenGlobalSettings;
+  final VoidCallback? onCheckForUpdate;
 
   const AppHeader({
     super.key,
     required this.onAddProject,
     required this.onOpenGlobalSettings,
+    this.onCheckForUpdate,
   });
 
   @override
   State<AppHeader> createState() => _AppHeaderState();
 }
 
-class _AppHeaderState extends State<AppHeader> with WindowListener {
+class _AppHeaderState extends State<AppHeader> {
   bool _isMaximized = false;
+  ListenerId? _listenerId;
 
   @override
   void initState() {
     super.initState();
-    windowManager.addListener(this);
-    _checkMaximized();
+    _initWindow();
   }
 
-  @override
-  void dispose() {
-    windowManager.removeListener(this);
-    super.dispose();
-  }
-
-  Future<void> _checkMaximized() async {
-    final max = await windowManager.isMaximized();
-    if (mounted) {
-      setState(() => _isMaximized = max);
+  void _initWindow() {
+    final window = WindowManager.instance.getCurrent();
+    if (window != null) {
+      if (mounted) {
+        setState(() => _isMaximized = window.isMaximized);
+      }
+      _listenerId = window.addListener((event) {
+        if (event is WindowMaximizedEvent) {
+          if (mounted) setState(() => _isMaximized = true);
+        } else if (event is WindowRestoredEvent || event is WindowResizedEvent) {
+          if (mounted) {
+            final max = window.isMaximized;
+            if (_isMaximized != max) {
+              setState(() => _isMaximized = max);
+            }
+          }
+        }
+      });
     }
   }
 
   @override
-  void onWindowMaximize() {
-    setState(() => _isMaximized = true);
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    setState(() => _isMaximized = false);
+  void dispose() {
+    if (_listenerId != null) {
+      final window = WindowManager.instance.getCurrent();
+      window?.removeListener(_listenerId!);
+    }
+    super.dispose();
   }
 
   @override
@@ -158,6 +169,27 @@ class _AppHeaderState extends State<AppHeader> with WindowListener {
                 height: 32,
                 padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 icon: const PhosphorIcon(
+                  PhosphorIconsDuotone.gitCommit,
+                  size: 18,
+                ),
+                hoverIcon: const PhosphorIcon(
+                  PhosphorIconsFill.gitCommit,
+                  size: 18,
+                ),
+                text: 'Updates',
+                onClick:
+                    widget.onCheckForUpdate ??
+                    () => launchUrl(
+                      Uri.parse(AppConstants.updateUrl),
+                      mode: LaunchMode.externalApplication,
+                    ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              AppButton(
+                variant: ButtonVariant.secondary,
+                height: 32,
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                icon: const PhosphorIcon(
                   PhosphorIconsDuotone.gearSix,
                   size: 18,
                 ),
@@ -192,7 +224,10 @@ class _AppHeaderState extends State<AppHeader> with WindowListener {
             children: [
               WindowCaptionButton(
                 icon: Icon(PhosphorIconsBold.minus),
-                onTap: () => windowManager.minimize(),
+                onTap: () {
+                  final window = WindowManager.instance.getCurrent();
+                  window?.minimize();
+                },
               ),
               WindowCaptionButton(
                 icon: Icon(
@@ -200,18 +235,24 @@ class _AppHeaderState extends State<AppHeader> with WindowListener {
                       ? PhosphorIconsBold.copy
                       : PhosphorIconsBold.square,
                 ),
-                onTap: () async {
-                  if (await windowManager.isMaximized()) {
-                    await windowManager.unmaximize();
-                  } else {
-                    await windowManager.maximize();
+                onTap: () {
+                  final window = WindowManager.instance.getCurrent();
+                  if (window != null) {
+                    if (window.isMaximized) {
+                      window.unmaximize();
+                    } else {
+                      window.maximize();
+                    }
                   }
                 },
               ),
               WindowCaptionButton(
                 isClose: true,
                 icon: Icon(PhosphorIconsBold.x),
-                onTap: () => windowManager.close(),
+                onTap: () {
+                  final window = WindowManager.instance.getCurrent();
+                  window?.close();
+                },
               ),
             ],
           ),

@@ -1,6 +1,9 @@
 class AppConstants {
   AppConstants._();
 
+  static const String updateUrl =
+      'https://github.com/romiojoseph/friday/releases';
+
   static const String defaultExclusionRules =
       '*.bak, *.orig, *.log, *.etl, *.evtx, *.cache, *.autosave, thumbs.db, desktop.ini, .DS_Store, .git, node_modules, .idea, .vscode, vendor, .venv';
 }

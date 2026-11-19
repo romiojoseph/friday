@@ -293,7 +293,7 @@ class _ExclusionPatternsManagerState extends State<ExclusionPatternsManager> {
             ],
           ],
         ),
-        const SizedBox(height: AppSpacing.xs),
+        const SizedBox(height: AppSpacing.md),
 
         Wrap(
           spacing: AppSpacing.xs,

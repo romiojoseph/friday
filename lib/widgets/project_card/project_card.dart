@@ -323,7 +323,7 @@ class _ProjectCardState extends State<ProjectCard>
                           Expanded(
                             child: Text(
                               widget.project.activeWritesReason.isNotEmpty
-                                  ? '${widget.project.activeWritesReason}. Make sure to close the file before backing up.'
+                                  ? '${widget.project.activeWritesReason}. Close the file before backing up.'
                                   : 'Active writes detected (temp files or SQLite locks). Recommended to close the local app before backing up.',
                               style: AppTypography.body.copyWith(
                                 color: AppColors.statusNewText,
